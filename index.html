@@ -1,548 +1,579 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>AquaSmart – La botella inteligente</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Cabinet+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet"/>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --azul:#0af;--cyan:#00ffe0;--oscuro:#050d14;
+  --card:rgba(11,28,44,0.72);--card-solid:#0b1c2c;
+  --borde:rgba(0,170,255,.14);--borde-h:rgba(0,170,255,.42);
+  --texto:#cde8ff;--blanco:#ffffff;
+  --grad:linear-gradient(135deg,#0af 0%,#00ffe0 100%);
+  --grad-t:linear-gradient(90deg,#0af 0%,#00ffe0 60%,#0af 100%);
+  --glow:0 0 40px rgba(0,170,255,.16),0 16px 48px rgba(0,0,0,.6);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Cabinet Grotesk','DM Sans',sans-serif;background:var(--oscuro);color:var(--texto);overflow-x:hidden;cursor:none}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9997;opacity:.018;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px}
 
-:root {
---azul: #0af;
---cyan: #00ffe0;
---oscuro: #050d14;
---card: #0b1c2c;
---borde: rgba(0,170,255,.18);
---texto: #cde8ff;
---blanco: #ffffff;
---grad: linear-gradient(135deg,#0af 0%,#00ffe0 100%);
-}
+/* CURSOR */
+#cur{width:11px;height:11px;background:var(–cyan);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;mix-blend-mode:screen;z-index:9999;will-change:transform}
+#cur-ring{width:36px;height:36px;border:1.5px solid rgba(0,255,224,.45);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transition:width .35s,height .35s,border-color .3s;will-change:transform}
+#cur.hov{width:5px;height:5px}
+#cur-ring.hov{width:50px;height:50px;border-color:var(–azul)}
 
-html { scroll-behavior: smooth; }
+/* PROGRESS BAR */
+#pb{position:fixed;top:0;left:0;height:2px;width:0;z-index:9999;background:var(–grad);box-shadow:0 0 10px var(–cyan);transition:width .1s linear}
 
-body {
-font-family: 'DM Sans', sans-serif;
-background: var(--oscuro);
-color: var(--texto);
-overflow-x: hidden;
-}
+/* NAV */
+nav{position:fixed;top:0;width:100%;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:1.1rem 5%;background:rgba(5,13,20,.65);backdrop-filter:blur(22px) saturate(1.5);border-bottom:1px solid var(–borde);transition:background .3s}
+nav.scrolled{background:rgba(5,13,20,.9)}
+.logo{font-family:‘Syne’,sans-serif;font-weight:800;font-size:1.45rem;background:var(–grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:1.8rem;list-style:none;align-items:center}
+.nav-links a{color:var(–texto);text-decoration:none;font-size:.875rem;letter-spacing:.03em;transition:color .2s;position:relative}
+.nav-links a::after{content:’’;position:absolute;bottom:-3px;left:0;right:0;height:1px;background:var(–grad);transform:scaleX(0);transform-origin:right;transition:transform .3s}
+.nav-links a:hover{color:#fff}
+.nav-links a:hover::after{transform:scaleX(1);transform-origin:left}
+.nav-cta{padding:.45rem 1.2rem!important;border-radius:999px;background:var(–grad);color:#000!important;font-weight:700;font-size:.82rem!important}
+.nav-cta::after{display:none!important}
+.nav-cta:hover{box-shadow:0 4px 18px rgba(0,170,255,.4)}
 
-/* ── CURSOR ── */
-body { cursor: none; }
-#cursor {
-width: 14px; height: 14px;
-background: var(--cyan);
-border-radius: 50%;
-position: fixed; top:0; left:0;
-pointer-events: none;
-mix-blend-mode: screen;
-z-index: 9999;
-transition: transform .12s ease, width .2s, height .2s;
-}
-#cursor.grande { width:36px; height:36px; transform:translate(-11px,-11px); opacity:.5; }
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7rem 5% 5rem;position:relative;overflow:hidden;text-align:center;z-index:1;
+background:radial-gradient(ellipse 70% 55% at 50% 60%,rgba(0,140,220,.09) 0%,transparent 65%)}
+.particulas{position:absolute;inset:0;pointer-events:none;z-index:0}
+.particula{position:absolute;border-radius:50%;background:var(–cyan);opacity:0;animation:flotar var(–dur,8s) ease-in-out infinite var(–delay,0s)}
+@keyframes flotar{0%{transform:translateY(100vh) scale(0);opacity:0}8%{opacity:.7}90%{opacity:.2}100%{transform:translateY(-10vh) scale(1.8);opacity:0}}
+.hero-content{position:relative;z-index:1;max-width:840px}
+.badge{display:inline-flex;align-items:center;gap:.5rem;padding:.32rem 1rem;border-radius:999px;border:1px solid var(–borde);background:rgba(0,170,255,.06);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(–azul);margin-bottom:2rem;animation:fadeUp .8s .2s both;backdrop-filter:blur(8px)}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(–cyan);animation:pdot 2s infinite}
+@keyframes pdot{0%,100%{box-shadow:0 0 0 0 rgba(0,255,224,.5)}50%{box-shadow:0 0 0 5px rgba(0,255,224,0)}}
+h1{font-family:‘Syne’,sans-serif;font-weight:800;font-size:clamp(2.8rem,7.5vw,5.8rem);line-height:1.02;margin-bottom:1.3rem;letter-spacing:-.03em;animation:fadeUp .8s .4s both}
+h1 .gw{background:var(–grad-t);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite}
+@keyframes shimmer{0%{background-position:0% center}100%{background-position:200% center}}
+.hero p{font-size:1.12rem;font-weight:300;max-width:540px;margin:0 auto 2.8rem;color:#8ab4cf;line-height:1.7;animation:fadeUp .8s .6s both}
+.btn-group{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadeUp .8s .8s both}
+.btn{padding:.9rem 2.4rem;border-radius:999px;font-size:.95rem;font-weight:600;text-decoration:none;cursor:none;transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;letter-spacing:.01em}
+.btn-prim{background:var(–grad);color:#000;box-shadow:0 4px 24px rgba(0,170,255,.2)}
+.btn-prim:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 12px 36px rgba(0,170,255,.45)}
+.btn-sec{border:1px solid var(–borde);color:#fff;background:rgba(255,255,255,.04);backdrop-filter:blur(10px)}
+.btn-sec:hover{background:rgba(0,170,255,.1);border-color:var(–azul);transform:translateY(-3px)}
+.hero-botella{margin-top:4.5rem;animation:fadeUp .8s 1s both;display:inline-block;position:relative}
+.hero-botella::before{content:’’;position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:120px;height:28px;background:radial-gradient(ellipse,rgba(0,170,255,.3) 0%,transparent 70%);border-radius:50%;animation:shpulse 4s ease-in-out infinite}
+@keyframes shpulse{0%,100%{transform:translateX(-50%) scaleX(1);opacity:.5}50%{transform:translateX(-50%) scaleX(.7);opacity:.2}}
+.botella-svg{width:190px;filter:drop-shadow(0 0 32px rgba(0,170,255,.55)) drop-shadow(0 0 8px rgba(0,255,224,.2));animation:levitar 4s ease-in-out infinite}
+@keyframes levitar{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+.scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:.38;animation:fadeUp 1s 1.6s both;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(–azul)}
+.scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,var(–azul),transparent);animation:sdrop 2s ease-in-out infinite}
+@keyframes sdrop{0%{transform:scaleY(0);transform-origin:top;opacity:1}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom;opacity:0}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
 
-/* ── NAV ── */
-nav {
-position: fixed; top:0; width:100%; z-index: 100;
-display: flex; justify-content: space-between; align-items: center;
-padding: 1.2rem 5%;
-background: rgba(5,13,20,.75);
-backdrop-filter: blur(12px);
-border-bottom: 1px solid var(--borde);
-}
-.logo {
-font-family: 'Syne', sans-serif;
-font-weight: 800; font-size: 1.5rem;
-background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.nav-links { display:flex; gap:2rem; list-style:none; }
-.nav-links a {
-color: var(--texto); text-decoration:none; font-size:.9rem; letter-spacing:.04em;
-transition: color .2s;
-}
-.nav-links a:hover { color: var(--azul); }
+/* STATS */
+.stats-band{padding:4.5rem 5%;background:var(–grad);display:flex;flex-wrap:wrap;justify-content:center;position:relative;z-index:1;overflow:hidden}
+.stats-band::before{content:’’;position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(0,0,0,.04) 0,rgba(0,0,0,.04) 1px,transparent 1px,transparent 80px)}
+.stat{text-align:center;flex:1;min-width:160px;padding:.5rem 2rem;border-right:1px solid rgba(0,0,0,.12)}
+.stat:last-child{border-right:none}
+.stat-num{font-family:‘Syne’,sans-serif;font-weight:800;font-size:clamp(2.4rem,4vw,3.2rem);color:#000;line-height:1;font-variant-numeric:tabular-nums}
+.stat-label{font-size:.82rem;color:rgba(0,0,0,.6);margin-top:.4rem;font-weight:500}
 
-/* ── HERO ── */
-.hero {
-min-height: 100vh;
-display: flex; align-items: center; justify-content: center;
-padding: 7rem 5% 4rem;
-position: relative; overflow: hidden;
-text-align: center;
-}
-/* fondo animado */
-.hero::before {
-content:'';
-position:absolute; inset:0;
-background:
-radial-gradient(ellipse 60% 50% at 50% 60%, rgba(0,170,255,.13) 0%, transparent 70%),
-radial-gradient(ellipse 40% 30% at 80% 20%, rgba(0,255,224,.08) 0%, transparent 60%);
-animation: pulso 6s ease-in-out infinite alternate;
-}
-@keyframes pulso { from{opacity:.6} to{opacity:1} }
+/* GENERIC */
+section{padding:7rem 5%;position:relative;z-index:1}
+.section-tag{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .9rem;border-radius:999px;border:1px solid var(–borde);background:rgba(0,170,255,.05);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(–azul);margin-bottom:1.2rem}
+.section-title{font-family:‘Syne’,sans-serif;font-weight:800;font-size:clamp(1.9rem,4vw,3rem);margin-bottom:.65rem;letter-spacing:-.02em;color:#fff}
+.section-sub{color:#4a6d82;margin-bottom:4rem;font-size:.95rem;font-weight:300}
 
-/* partículas */
-.particulas { position:absolute; inset:0; pointer-events:none; }
-.particula {
-position:absolute;
-width:3px; height:3px;
-border-radius:50%;
-background: var(--cyan);
-opacity:0;
-animation: flotar var(--dur,8s) ease-in-out infinite var(--delay,0s);
-}
-@keyframes flotar {
-0% { transform: translateY(100vh) scale(0); opacity:0; }
-10% { opacity:.6; }
-90% { opacity:.3; }
-100% { transform: translateY(-10vh) scale(1.5); opacity:0; }
-}
+/* CARDS */
+#caracteristicas{background:linear-gradient(180deg,var(–oscuro) 0%,#060f1a 100%)}
+.grid-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.4rem}
+.card{background:var(–card);border:1px solid var(–borde);border-radius:1.4rem;padding:2.2rem;position:relative;overflow:hidden;backdrop-filter:blur(14px);transition:transform .35s cubic-bezier(.34,1.56,.64,1),box-shadow .35s,border-color .35s}
+.card::before{content:’’;position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,170,255,.4),transparent);opacity:0;transition:opacity .35s}
+.card::after{content:’’;position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(0,170,255,.09),transparent 65%);opacity:0;transition:opacity .35s}
+.card:hover{transform:translateY(-8px);border-color:var(–borde-h);box-shadow:var(–glow)}
+.card:hover::before,.card:hover::after{opacity:1}
+.card-icon{font-size:2rem;margin-bottom:1.2rem;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:1rem;background:rgba(0,170,255,.08);border:1px solid rgba(0,170,255,.12)}
+.card h3{font-family:‘Syne’,sans-serif;font-size:1.1rem;margin-bottom:.5rem;color:#fff}
+.card p{font-size:.88rem;color:#5e8099;line-height:1.65}
 
-.hero-content { position:relative; z-index:1; max-width:800px; }
+/* PASOS */
+#como-funciona{background:#05101a}
+.pasos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:2rem;counter-reset:paso;position:relative}
+.pasos::before{content:’’;position:absolute;top:3.4rem;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,var(–borde),var(–azul),var(–borde),transparent);pointer-events:none}
+.paso{text-align:center;padding:2.8rem 1.8rem 2.2rem;border-radius:1.4rem;background:var(–card);border:1px solid var(–borde);position:relative;backdrop-filter:blur(14px);transition:transform .3s,border-color .3s,box-shadow .3s}
+.paso:hover{transform:translateY(-6px);border-color:var(–borde-h);box-shadow:var(–glow)}
+.paso-num{counter-increment:paso;position:absolute;top:-1.1rem;left:50%;transform:translateX(-50%);width:2.4rem;height:2.4rem;background:var(–grad);color:#000;font-family:‘Syne’,sans-serif;font-weight:800;font-size:.88rem;display:grid;place-items:center;border-radius:50%;box-shadow:0 0 20px rgba(0,170,255,.4)}
+.paso-num::before{content:counter(paso)}
+.paso-ico{font-size:2.5rem;margin-bottom:1rem}
+.paso h3{font-family:‘Syne’,sans-serif;color:#fff;margin-bottom:.5rem;font-size:1rem}
+.paso p{font-size:.86rem;color:#5e8099;line-height:1.65}
 
-.badge {
-display:inline-block;
-padding:.3rem 1rem; border-radius:999px;
-border:1px solid var(--borde);
-font-size:.78rem; letter-spacing:.12em; text-transform:uppercase;
-color: var(--azul); margin-bottom: 1.8rem;
-animation: fadeUp .8s .2s both;
-}
-h1 {
-font-family:'Syne',sans-serif; font-weight:800;
-font-size: clamp(2.8rem,7vw,5.5rem);
-line-height:1.05; margin-bottom:1.2rem;
-animation: fadeUp .8s .4s both;
-}
-h1 span { background: var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-.hero p {
-font-size:1.15rem; font-weight:300; max-width:560px; margin:0 auto 2.5rem;
-color:#8ab4cf; animation: fadeUp .8s .6s both;
-}
-.btn-group { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; animation: fadeUp .8s .8s both; }
-.btn {
-padding:.85rem 2.2rem; border-radius:999px; font-size:.95rem; font-weight:500;
-text-decoration:none; cursor:none; transition: transform .2s, box-shadow .2s;
-}
-.btn-prim {
-background: var(--grad); color:#000;
-}
-.btn-prim:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(0,170,255,.4); }
-.btn-sec {
-border:1px solid var(--borde); color:var(--blanco);
-background: rgba(255,255,255,.04);
-}
-.btn-sec:hover { background:rgba(0,170,255,.1); border-color:var(--azul); }
+/* CALCULADORA */
+#calculadora{background:var(–oscuro)}
+.calc-wrap{max-width:700px;margin:0 auto;background:var(–card);border:1px solid var(–borde);border-radius:2rem;padding:3rem 2.8rem;backdrop-filter:blur(20px);position:relative;overflow:hidden}
+.calc-wrap::before{content:’’;position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,170,255,.45),transparent)}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem}
+.calc-field{display:flex;flex-direction:column;gap:.5rem}
+.calc-field label{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:#4a6d82}
+.calc-field input,.calc-field select{background:rgba(0,170,255,.05);border:1px solid var(–borde);border-radius:.8rem;padding:.8rem 1rem;color:#fff;font-family:‘Cabinet Grotesk’,sans-serif;font-size:.95rem;outline:none;cursor:none;transition:border-color .25s,box-shadow .25s;-webkit-appearance:none;appearance:none}
+.calc-field input:focus,.calc-field select:focus{border-color:var(–azul);box-shadow:0 0 0 3px rgba(0,170,255,.12)}
+.calc-field select option{background:#0b1c2c}
+.calc-result{display:flex;align-items:center;justify-content:space-between;background:rgba(0,170,255,.06);border:1px solid rgba(0,170,255,.2);border-radius:1.2rem;padding:1.5rem 2rem;flex-wrap:wrap;gap:1rem}
+.calc-result-label{font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;color:#4a6d82}
+.calc-result-val{font-family:‘Syne’,sans-serif;font-weight:800;font-size:2.8rem;color:#fff;line-height:1}
+.calc-result-val span{background:var(–grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.calc-result-info{font-size:.85rem;color:#5e8099;max-width:220px;line-height:1.5}
+.calc-bar-wrap{margin-top:1.5rem}
+.calc-bar-label{display:flex;justify-content:space-between;font-size:.78rem;color:#4a6d82;margin-bottom:.5rem}
+.calc-bar-bg{background:rgba(0,170,255,.1);border-radius:999px;height:8px;overflow:hidden}
+.calc-bar-fill{height:100%;border-radius:999px;background:var(–grad);transition:width .8s cubic-bezier(.16,1,.3,1);width:0}
+.btn-calc{width:100%;padding:.85rem;background:var(–grad);color:#000;border:none;border-radius:999px;font-size:.95rem;font-weight:700;cursor:none;font-family:‘Cabinet Grotesk’,sans-serif;margin-bottom:1.5rem;transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s}
+.btn-calc:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,170,255,.4)}
 
-/* botella animada */
-.hero-botella {
-margin-top:4rem; animation: fadeUp .8s 1s both;
-}
-.botella-svg { width:180px; filter:drop-shadow(0 0 28px rgba(0,170,255,.5)); animation: levitar 4s ease-in-out infinite; }
-@keyframes levitar { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+/* SPECS */
+#especificaciones{background:#05101a}
+.specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:720px}
+.spec-item{display:flex;gap:1.1rem;align-items:center;background:var(–card);border:1px solid var(–borde);border-radius:1rem;padding:1.1rem 1.5rem;backdrop-filter:blur(12px);transition:border-color .3s,transform .3s}
+.spec-item:hover{border-color:var(–borde-h);transform:translateX(5px)}
+.spec-ico{font-size:1.4rem;width:44px;height:44px;background:rgba(0,170,255,.07);border:1px solid rgba(0,170,255,.1);border-radius:.7rem;display:grid;place-items:center;flex-shrink:0}
+.spec-label{font-size:.74rem;color:#4a6d82;text-transform:uppercase;letter-spacing:.07em}
+.spec-val{font-weight:600;color:#fff;font-size:.95rem;margin-top:.15rem}
 
-@keyframes fadeUp {
-from { opacity:0; transform:translateY(28px); }
-to { opacity:1; transform:translateY(0); }
-}
+/* COMPARADOR */
+#comparador{background:var(–oscuro)}
+.compare-table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(–borde);border-radius:1.4rem;overflow:hidden}
+.compare-table th{background:rgba(0,170,255,.07);padding:1.1rem 1.5rem;font-family:‘Syne’,sans-serif;font-size:.88rem;letter-spacing:.06em;text-transform:uppercase;color:var(–azul);font-weight:700;text-align:center}
+.compare-table th:first-child{text-align:left;color:#4a6d82}
+.compare-table th.hl{background:rgba(0,170,255,.15)}
+.compare-table td{padding:.9rem 1.5rem;border-top:1px solid var(–borde);font-size:.9rem;text-align:center;color:#8ab4cf;transition:background .2s}
+.compare-table td:first-child{text-align:left;color:#fff;font-weight:500}
+.compare-table tr:hover td{background:rgba(0,170,255,.04)}
+.compare-table td.hl{background:rgba(0,170,255,.07)}
+.ccheck{color:var(–cyan);font-size:1.1rem}
+.cno{color:rgba(255,255,255,.2);font-size:1.1rem}
 
-/* ── SECCIÓN GENÉRICA ── */
-section { padding: 6rem 5%; }
-.section-title {
-font-family:'Syne',sans-serif; font-weight:800;
-font-size: clamp(1.8rem,4vw,2.8rem); margin-bottom:.6rem;
-}
-.section-sub { color:#7a9db5; margin-bottom:3.5rem; font-size:1rem; }
+/* TICKER */
+#opiniones{background:#05101a}
+.ticker-wrap{overflow:hidden;position:relative;padding:0 0 5rem}
+.ticker-wrap::before,.ticker-wrap::after{content:’’;position:absolute;top:0;bottom:0;width:10%;z-index:2;pointer-events:none}
+.ticker-wrap::before{left:0;background:linear-gradient(to right,#05101a,transparent)}
+.ticker-wrap::after{right:0;background:linear-gradient(to left,#05101a,transparent)}
+.ticker-track{display:flex;gap:1.5rem;width:max-content;animation:tick 40s linear infinite}
+.ticker-track:hover{animation-play-state:paused}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tcard{flex-shrink:0;width:300px;padding:1.8rem;background:var(–card);border:1px solid var(–borde);border-radius:1.2rem;backdrop-filter:blur(14px)}
+.tcard-stars{color:#ffbc00;font-size:.95rem;margin-bottom:.8rem;letter-spacing:.15em}
+.tcard-text{font-size:.88rem;color:#8ab4cf;line-height:1.65;margin-bottom:1.2rem}
+.tcard-author{display:flex;align-items:center;gap:.7rem}
+.tcard-avatar{width:36px;height:36px;border-radius:50%;background:var(–grad);display:grid;place-items:center;font-size:1rem;flex-shrink:0}
+.tcard-name{font-family:‘Syne’,sans-serif;font-size:.85rem;color:#fff;font-weight:700}
+.tcard-role{font-size:.75rem;color:#4a6d82}
 
-/* ── CARACTERÍSTICAS ── */
-#caracteristicas { background: linear-gradient(180deg, var(--oscuro) 0%, #060f1a 100%); }
-.grid-features {
-display:grid;
-grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-gap:1.5rem;
-}
-.card {
-background: var(--card);
-border:1px solid var(--borde);
-border-radius:1.2rem;
-padding:2rem;
-transition: transform .3s, box-shadow .3s, border-color .3s;
-position:relative; overflow:hidden;
-}
-.card::after {
-content:'';
-position:absolute; inset:0;
-background: radial-gradient(circle at 50% 0%, rgba(0,170,255,.08), transparent 70%);
-opacity:0; transition:opacity .3s;
-}
-.card:hover { transform:translateY(-6px); border-color:rgba(0,170,255,.4); box-shadow:0 16px 40px rgba(0,0,0,.4); }
-.card:hover::after { opacity:1; }
-.card-icon { font-size:2.4rem; margin-bottom:1rem; }
-.card h3 { font-family:'Syne',sans-serif; font-size:1.15rem; margin-bottom:.5rem; color:var(--blanco); }
-.card p { font-size:.9rem; color:#7a9db5; line-height:1.6; }
+/* EQUIPO */
+#equipo{background:var(–oscuro);text-align:center}
+.equipo-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:1.8rem}
+.miembro{width:170px;padding:2.2rem 1.2rem;background:var(–card);border:1px solid var(–borde);border-radius:1.4rem;position:relative;overflow:hidden;backdrop-filter:blur(14px);transition:transform .35s cubic-bezier(.34,1.56,.64,1),border-color .3s,box-shadow .3s}
+.miembro::after{content:’’;position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(0,170,255,.08),transparent 60%);opacity:0;transition:opacity .3s}
+.miembro:hover{transform:translateY(-8px);border-color:var(–borde-h);box-shadow:var(–glow)}
+.miembro:hover::after{opacity:1}
+.avatar{width:76px;height:76px;border-radius:50%;background:var(–grad);margin:0 auto 1.2rem;display:grid;place-items:center;font-size:1.9rem;box-shadow:0 0 24px rgba(0,170,255,.35);position:relative;z-index:1}
+.miembro h4{font-family:‘Syne’,sans-serif;font-size:.95rem;color:#fff;margin-bottom:.35rem;position:relative;z-index:1}
+.miembro span{font-size:.76rem;color:#4a6d82;position:relative;z-index:1}
 
-/* ── CÓMO FUNCIONA ── */
-#como-funciona { background:#060f1a; }
-.pasos {
-display:grid;
-grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
-gap:2rem; counter-reset:paso;
-}
-.paso {
-text-align:center; padding:2.5rem 1.5rem;
-border-radius:1.2rem;
-background: var(--card);
-border:1px solid var(--borde);
-position:relative;
-}
-.paso::before {
-counter-increment:paso;
-content:counter(paso);
-position:absolute; top:-1rem; left:50%; transform:translateX(-50%);
-width:2.2rem; height:2.2rem;
-border-radius:50%;
-background: var(--grad);
-color:#000; font-family:'Syne',sans-serif; font-weight:800;
-display:grid; place-items:center; font-size:.9rem;
-}
-.paso-ico { font-size:2.8rem; margin-bottom:1rem; }
-.paso h3 { font-family:'Syne',sans-serif; color:var(--blanco); margin-bottom:.5rem; }
-.paso p { font-size:.88rem; color:#7a9db5; line-height:1.6; }
+/* FAQ */
+#faq{background:#05101a}
+.faq-list{max-width:700px}
+.faq-item{border-bottom:1px solid var(–borde)}
+.faq-q{width:100%;background:none;border:none;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:1.4rem 0;text-align:left;cursor:none;font-family:‘Syne’,sans-serif;font-size:1rem;font-weight:700;transition:color .2s;gap:1rem}
+.faq-q:hover{color:var(–azul)}
+.faq-icon{width:24px;height:24px;border-radius:50%;border:1.5px solid var(–borde);display:grid;place-items:center;flex-shrink:0;transition:transform .35s,border-color .3s,background .3s;font-size:.85rem;color:var(–azul)}
+.faq-item.open .faq-icon{transform:rotate(45deg);background:rgba(0,170,255,.1);border-color:var(–azul)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.16,1,.3,1)}
+.faq-a p{font-size:.9rem;color:#5e8099;line-height:1.7;padding-bottom:1.4rem}
+.faq-item.open .faq-a{max-height:300px}
 
-/* ── ESTADÍSTICAS ── */
-.stats-band {
-padding:4rem 5%;
-background: var(--grad);
-display:flex; flex-wrap:wrap;
-justify-content:center; gap:3rem;
-}
-.stat { text-align:center; }
-.stat-num {
-font-family:'Syne',sans-serif; font-weight:800;
-font-size:3rem; color:#000; line-height:1;
-}
-.stat-label { font-size:.85rem; color:rgba(0,0,0,.65); margin-top:.3rem; }
+/* CONTACTO */
+#contacto{background:var(–oscuro);text-align:center}
+.contacto-card{max-width:580px;margin:0 auto;background:var(–card);border:1px solid var(–borde);border-radius:2rem;padding:3.5rem 3rem;backdrop-filter:blur(24px);box-shadow:0 24px 80px rgba(0,0,0,.5);position:relative;overflow:hidden}
+.contacto-card::before{content:’’;position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,170,255,.5),transparent)}
+.contacto-card>p{color:#5e8099;margin-bottom:2.5rem;line-height:1.75;font-size:.95rem}
+.contacto-inputs{display:flex;flex-direction:column;gap:1rem;margin-bottom:1.5rem}
+.input-wrap{position:relative}
+.input-wrap label{position:absolute;top:50%;left:1.1rem;transform:translateY(-50%);font-size:.85rem;color:#3a5a6e;pointer-events:none;transition:all .25s cubic-bezier(.4,0,.2,1)}
+.input-wrap.tw label{top:1rem;transform:none}
+.input-wrap input:focus~label,.input-wrap input:not(:placeholder-shown)~label,
+.input-wrap textarea:focus~label,.input-wrap textarea:not(:placeholder-shown)~label{top:-.55rem;left:.8rem;transform:none;font-size:.72rem;color:var(–azul);background:var(–card-solid);padding:0 .3rem;border-radius:3px}
+.input-wrap input,.input-wrap textarea{width:100%;background:rgba(0,170,255,.05);border:1px solid var(–borde);border-radius:.8rem;padding:.9rem 1.1rem;color:#fff;font-family:‘Cabinet Grotesk’,sans-serif;font-size:.9rem;outline:none;transition:border-color .25s,box-shadow .25s;cursor:none}
+.input-wrap input::placeholder,.input-wrap textarea::placeholder{color:transparent}
+.input-wrap input:focus,.input-wrap textarea:focus{border-color:var(–azul);background:rgba(0,170,255,.08);box-shadow:0 0 0 3px rgba(0,170,255,.12),0 4px 20px rgba(0,0,0,.3)}
+.input-wrap textarea{min-height:110px;resize:vertical}
+.btn-enviar{width:100%;padding:1rem;background:var(–grad);color:#000;border:none;border-radius:999px;font-size:1rem;font-weight:700;cursor:none;font-family:‘Cabinet Grotesk’,sans-serif;transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;position:relative;overflow:hidden}
+.btn-enviar::before{content:’’;position:absolute;top:-50%;left:-60%;width:40%;height:200%;background:rgba(255,255,255,.2);transform:skewX(-20deg);transition:left .5s}
+.btn-enviar:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(0,170,255,.45)}
+.btn-enviar:hover::before{left:160%}
 
-/* ── ESPECIFICACIONES ── */
-#especificaciones { background: var(--oscuro); }
-.specs-grid {
-display:grid; grid-template-columns:1fr 1fr; gap:1rem; max-width:700px;
-}
-.spec-item {
-display:flex; gap:1rem; align-items:center;
-background:var(--card); border:1px solid var(--borde);
-border-radius:.8rem; padding:1rem 1.4rem;
-}
-.spec-ico { font-size:1.5rem; }
-.spec-label { font-size:.78rem; color:#7a9db5; text-transform:uppercase; letter-spacing:.06em; }
-.spec-val { font-weight:500; color:var(--blanco); font-size:.95rem; }
+footer{text-align:center;padding:2.5rem 5%;border-top:1px solid var(–borde);color:#1e3445;font-size:.8rem;position:relative;z-index:1}
+footer span{color:var(–azul)}
 
-/* ── EQUIPO ── */
-#equipo { background:#060f1a; text-align:center; }
-.equipo-grid {
-display:flex; flex-wrap:wrap; justify-content:center; gap:1.5rem;
-}
-.miembro {
-width:160px; padding:1.8rem 1rem;
-background:var(--card); border:1px solid var(--borde);
-border-radius:1.2rem;
-transition: transform .3s;
-}
-.miembro:hover { transform:translateY(-5px); border-color:var(--azul); }
-.avatar {
-width:72px; height:72px; border-radius:50%;
-background: var(--grad);
-margin:0 auto 1rem;
-display:grid; place-items:center;
-font-size:1.8rem;
-}
-.miembro h4 { font-family:'Syne',sans-serif; font-size:.95rem; color:var(--blanco); margin-bottom:.3rem; }
-.miembro span { font-size:.78rem; color:#7a9db5; }
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:none}
+.rd1{transition-delay:.1s}.rd2{transition-delay:.2s}.rd3{transition-delay:.3s}.rd4{transition-delay:.4s}
 
-/* ── CONTACTO ── */
-#contacto { background:var(--oscuro); text-align:center; }
-.contacto-card {
-max-width:560px; margin:0 auto;
-background:var(--card); border:1px solid var(--borde);
-border-radius:1.6rem; padding:3rem 2.5rem;
-}
-.contacto-card p { color:#7a9db5; margin-bottom:2rem; line-height:1.7; }
-.contacto-inputs { display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem; }
-.contacto-inputs input,
-.contacto-inputs textarea {
-background:rgba(0,170,255,.06);
-border:1px solid var(--borde);
-border-radius:.6rem; padding:.8rem 1rem;
-color:var(--blanco); font-family:'DM Sans',sans-serif; font-size:.9rem;
-outline:none; transition:border-color .2s;
-cursor:none;
-}
-.contacto-inputs input:focus,
-.contacto-inputs textarea:focus { border-color:var(--azul); }
-.contacto-inputs textarea { min-height:100px; resize:vertical; }
-.btn-enviar {
-width:100%; padding:.9rem;
-background:var(--grad); color:#000;
-border:none; border-radius:999px; font-size:1rem; font-weight:600;
-cursor:none; transition:transform .2s, box-shadow .2s;
-}
-.btn-enviar:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,170,255,.35); }
-
-/* ── FOOTER ── */
-footer {
-text-align:center; padding:2rem 5%;
-border-top:1px solid var(--borde);
-color:#3a5a6e; font-size:.82rem;
-}
-footer span { color:var(--azul); }
-
-/* ── SCROLL REVEAL ── */
-.reveal { opacity:0; transform:translateY(30px); transition: opacity .7s ease, transform .7s ease; }
-.reveal.visible { opacity:1; transform:none; }
-
-@media(max-width:600px){
-.specs-grid { grid-template-columns:1fr; }
-.nav-links { display:none; }
+@media(max-width:640px){
+.specs-grid,.calc-grid{grid-template-columns:1fr}
+.nav-links{display:none}
+.pasos::before{display:none}
+.stat{border-right:none;border-bottom:1px solid rgba(0,0,0,.1);padding:1.2rem}
+.stat:last-child{border-bottom:none}
+.compare-table{font-size:.78rem}
+.compare-table th,.compare-table td{padding:.65rem .8rem}
+.contacto-card{padding:2.5rem 1.5rem}
 }
 </style>
+
 </head>
 <body>
 
-<!-- CURSOR -->
-<div id="cursor"></div>
+<div id="pb"></div>
+<div id="cur"></div>
+<div id="cur-ring"></div>
 
-<!-- NAV -->
-<nav>
-<div class="logo">AquaSmart</div>
-<ul class="nav-links">
-<li><a href="#caracteristicas">Características</a></li>
-<li><a href="#como-funciona">Cómo funciona</a></li>
-<li><a href="#especificaciones">Especificaciones</a></li>
-<li><a href="#equipo">Equipo</a></li>
-<li><a href="#contacto">Contacto</a></li>
-</ul>
+<nav id="nav">
+  <div class="logo">AquaSmart</div>
+  <ul class="nav-links">
+    <li><a href="#caracteristicas">Características</a></li>
+    <li><a href="#calculadora">Calculadora</a></li>
+    <li><a href="#comparador">Comparativa</a></li>
+    <li><a href="#opiniones">Opiniones</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#contacto" class="nav-cta">Contacto</a></li>
+  </ul>
 </nav>
 
-<!-- HERO -->
 <section class="hero" id="inicio">
-<div class="particulas" id="particulas"></div>
-<div class="hero-content">
-<div class="badge">Proyecto de Tecnología · 1º Bachillerato</div>
-<h1>La botella que<br/><span>cuida tu hidratación</span></h1>
-<p>AquaSmart analiza tu cuerpo, mide tu nivel de hidratación en tiempo real y te dice exactamente cuánta agua necesitas beber cada día.</p>
-<div class="btn-group">
-<a href="#como-funciona" class="btn btn-prim">¿Cómo funciona?</a>
-<a href="#caracteristicas" class="btn btn-sec">Ver características</a>
-</div>
-<div class="hero-botella">
-<!-- Botella SVG animada -->
-<svg class="botella-svg" viewBox="0 0 120 260" fill="none" xmlns="http://www.w3.org/2000/svg">
-<!-- tapón -->
-<rect x="42" y="0" width="36" height="22" rx="7" fill="url(#grad1)"/>
-<!-- cuello -->
-<rect x="46" y="20" width="28" height="18" rx="4" fill="#0af" opacity=".7"/>
-<!-- cuerpo -->
-<rect x="22" y="36" width="76" height="200" rx="22" fill="#0b1c2c" stroke="url(#grad1)" stroke-width="2"/>
-<!-- agua animada -->
-<clipPath id="agua"><rect x="22" y="36" width="76" height="200" rx="22"/></clipPath>
-<g clip-path="url(#agua)">
-<rect x="22" y="130" width="76" height="106" fill="url(#gradAgua)" opacity=".55">
-<animateTransform attributeName="transform" type="translate" values="0,0;0,-6;0,0" dur="3s" repeatCount="indefinite"/>
-</rect>
-<!-- ola -->
-<path d="M22 132 Q40 124 60 132 Q80 140 98 132 L98 138 Q80 146 60 138 Q40 130 22 138Z" fill="url(#gradAgua)" opacity=".8">
-<animateTransform attributeName="transform" type="translate" values="0,0;0,-6;0,0" dur="3s" repeatCount="indefinite"/>
-</path>
-</g>
-<!-- pantalla -->
-<rect x="34" y="50" width="52" height="62" rx="8" fill="#071420" stroke="rgba(0,170,255,.3)" stroke-width="1.2"/>
-<text x="60" y="72" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="7" fill="#0af">HIDRATACIÓN</text>
-<text x="60" y="92" text-anchor="middle" font-family="'Syne',sans-serif" font-size="18" font-weight="800" fill="url(#grad1)">78%</text>
-<text x="60" y="105" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="6" fill="#00ffe0">↑ ÓPTIMA</text>
-<!-- indicadores LED -->
-<circle cx="40" cy="230" r="4" fill="#0af" opacity=".9"><animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite"/></circle>
-<circle cx="60" cy="230" r="4" fill="#00ffe0" opacity=".7"><animate attributeName="opacity" values=".4;1;.4" dur="2s" begin=".4s" repeatCount="indefinite"/></circle>
-<circle cx="80" cy="230" r="4" fill="#0af" opacity=".5"><animate attributeName="opacity" values=".4;1;.4" dur="2s" begin=".8s" repeatCount="indefinite"/></circle>
-<defs>
-<linearGradient id="grad1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0af"/><stop offset="100%" stop-color="#00ffe0"/></linearGradient>
-<linearGradient id="gradAgua" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0af"/><stop offset="100%" stop-color="#00ffe0"/></linearGradient>
-</defs>
-</svg>
-</div>
-</div>
+  <div class="particulas" id="particulas"></div>
+  <div class="hero-content">
+    <div class="badge"><span class="badge-dot"></span> Proyecto de Tecnología · 1º Bachillerato</div>
+    <h1>La botella que<br/><span class="gw">cuida tu hidratación</span></h1>
+    <p>AquaSmart analiza tu cuerpo, mide tu nivel de hidratación en tiempo real y te dice exactamente cuánta agua necesitas beber cada día.</p>
+    <div class="btn-group">
+      <a href="#calculadora" class="btn btn-prim">Calcula tu agua 💧</a>
+      <a href="#caracteristicas" class="btn btn-sec">Ver características</a>
+    </div>
+    <div class="hero-botella">
+      <svg class="botella-svg" viewBox="0 0 120 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="42" y="0" width="36" height="22" rx="7" fill="url(#g1)"/>
+        <rect x="46" y="20" width="28" height="18" rx="4" fill="#0af" opacity=".7"/>
+        <rect x="22" y="36" width="76" height="200" rx="22" fill="#0b1c2c" stroke="url(#g1)" stroke-width="2"/>
+        <clipPath id="agua"><rect x="22" y="36" width="76" height="200" rx="22"/></clipPath>
+        <g clip-path="url(#agua)">
+          <rect x="22" y="130" width="76" height="106" fill="url(#gA)" opacity=".55">
+            <animateTransform attributeName="transform" type="translate" values="0,0;0,-6;0,0" dur="3s" repeatCount="indefinite"/>
+          </rect>
+          <path d="M22 132 Q40 124 60 132 Q80 140 98 132 L98 138 Q80 146 60 138 Q40 130 22 138Z" fill="url(#gA)" opacity=".8">
+            <animateTransform attributeName="transform" type="translate" values="0,0;0,-6;0,0" dur="3s" repeatCount="indefinite"/>
+          </path>
+        </g>
+        <rect x="34" y="50" width="52" height="62" rx="8" fill="#071420" stroke="rgba(0,170,255,.3)" stroke-width="1.2"/>
+        <text x="60" y="72" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="7" fill="#0af">HIDRATACIÓN</text>
+        <text x="60" y="92" text-anchor="middle" font-family="'Syne',sans-serif" font-size="18" font-weight="800" fill="url(#g1)">78%</text>
+        <text x="60" y="105" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="6" fill="#00ffe0">↑ ÓPTIMA</text>
+        <circle cx="40" cy="230" r="4" fill="#0af"><animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite"/></circle>
+        <circle cx="60" cy="230" r="4" fill="#00ffe0"><animate attributeName="opacity" values=".4;1;.4" dur="2s" begin=".4s" repeatCount="indefinite"/></circle>
+        <circle cx="80" cy="230" r="4" fill="#0af"><animate attributeName="opacity" values=".4;1;.4" dur="2s" begin=".8s" repeatCount="indefinite"/></circle>
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0af"/><stop offset="100%" stop-color="#00ffe0"/></linearGradient>
+          <linearGradient id="gA" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0af"/><stop offset="100%" stop-color="#00ffe0"/></linearGradient>
+        </defs>
+      </svg>
+    </div>
+  </div>
+  <div class="scroll-hint"><div class="scroll-line"></div><span>scroll</span></div>
 </section>
 
-<!-- ESTADÍSTICAS -->
 <div class="stats-band">
-<div class="stat"><div class="stat-num">2.5L</div><div class="stat-label">Capacidad máxima</div></div>
-<div class="stat"><div class="stat-num">7</div><div class="stat-label">Sensores integrados</div></div>
-<div class="stat"><div class="stat-num">24h</div><div class="stat-label">Batería de larga duración</div></div>
-<div class="stat"><div class="stat-num">±2%</div><div class="stat-label">Precisión de medición</div></div>
+  <div class="stat"><div class="stat-num" data-target="2.5" data-suffix="L" data-dec="1">0L</div><div class="stat-label">Capacidad máxima</div></div>
+  <div class="stat"><div class="stat-num" data-target="7" data-suffix="" data-dec="0">0</div><div class="stat-label">Sensores integrados</div></div>
+  <div class="stat"><div class="stat-num" data-target="24" data-suffix="h" data-dec="0">0h</div><div class="stat-label">Batería de larga duración</div></div>
+  <div class="stat"><div class="stat-num" data-target="2" data-suffix="%" data-prefix="±" data-dec="0">±0%</div><div class="stat-label">Precisión de medición</div></div>
 </div>
 
-<!-- CARACTERÍSTICAS -->
 <section id="caracteristicas">
-<p class="badge reveal" style="display:inline-block">Tecnología</p>
-<h2 class="section-title reveal">Características innovadoras</h2>
-<p class="section-sub reveal">Todo lo que AqueSmart puede hacer por ti</p>
-<div class="grid-features">
-<div class="card reveal">
-<div class="card-icon">💧</div>
-<h3>Medición de hidratación</h3>
-<p>Sensores de bioimpedancia miden tu nivel de hidratación corporal en tiempo real directamente desde la palma de tu mano.</p>
-</div>
-<div class="card reveal">
-<div class="card-icon">🧠</div>
-<h3>IA personalizada</h3>
-<p>Un algoritmo de inteligencia artificial calcula exactamente cuánta agua necesitas según tu peso, actividad física y temperatura ambiente.</p>
-</div>
-<div class="card reveal">
-<div class="card-icon">📱</div>
-<h3>App conectada</h3>
-<p>Sincronización Bluetooth con tu móvil para ver estadísticas, recibir recordatorios y ver tu historial de hidratación semanal.</p>
-</div>
-<div class="card reveal">
-<div class="card-icon">🌡️</div>
-<h3>Sensor de temperatura</h3>
-<p>Mide la temperatura del agua y del ambiente para ajustar las recomendaciones de consumo en días de calor o durante el ejercicio.</p>
-</div>
-<div class="card reveal">
-<div class="card-icon">🔔</div>
-<h3>Recordatorios inteligentes</h3>
-<p>La botella vibra y emite luz LED cuando es hora de beber, adaptando la frecuencia según tu nivel de actividad del momento.</p>
-</div>
-<div class="card reveal">
-<div class="card-icon">♻️</div>
-<h3>Materiales sostenibles</h3>
-<p>Fabricada con plástico reciclado libre de BPA y acero inoxidable. Diseñada para durar toda la vida y reducir el uso de botellas de un solo uso.</p>
-</div>
-</div>
+  <p class="section-tag reveal">✦ Tecnología</p>
+  <h2 class="section-title reveal">Características innovadoras</h2>
+  <p class="section-sub reveal">Todo lo que AquaSmart puede hacer por ti</p>
+  <div class="grid-features">
+    <div class="card reveal rd1"><div class="card-icon">💧</div><h3>Medición de hidratación</h3><p>Sensores de bioimpedancia miden tu nivel de hidratación corporal en tiempo real desde la palma de tu mano.</p></div>
+    <div class="card reveal rd2"><div class="card-icon">🧠</div><h3>IA personalizada</h3><p>Un algoritmo de IA calcula cuánta agua necesitas según tu peso, actividad física y temperatura ambiente.</p></div>
+    <div class="card reveal rd3"><div class="card-icon">📱</div><h3>App conectada</h3><p>Sincronización Bluetooth con tu móvil para ver estadísticas, recordatorios e historial de hidratación semanal.</p></div>
+    <div class="card reveal rd1"><div class="card-icon">🌡️</div><h3>Sensor de temperatura</h3><p>Mide la temperatura del agua y del ambiente para ajustar las recomendaciones durante el ejercicio.</p></div>
+    <div class="card reveal rd2"><div class="card-icon">🔔</div><h3>Recordatorios inteligentes</h3><p>La botella vibra y emite luz LED cuando es hora de beber, adaptando la frecuencia a tu nivel de actividad.</p></div>
+    <div class="card reveal rd3"><div class="card-icon">♻️</div><h3>Materiales sostenibles</h3><p>Fabricada con plástico reciclado libre de BPA y acero inoxidable. Diseñada para durar toda la vida.</p></div>
+  </div>
 </section>
 
-<!-- CÓMO FUNCIONA -->
 <section id="como-funciona">
-<p class="badge reveal" style="display:inline-block">Proceso</p>
-<h2 class="section-title reveal">¿Cómo funciona?</h2>
-<p class="section-sub reveal">En solo 4 pasos cuidas tu salud sin esfuerzo</p>
-<div class="pasos">
-<div class="paso reveal">
-<div class="paso-ico">👤</div>
-<h3>Crea tu perfil</h3>
-<p>Introduce tu edad, peso, altura y nivel de actividad física en la app. AquaSmart te conoce.</p>
-</div>
-<div class="paso reveal">
-<div class="paso-ico">🔬</div>
-<h3>Medición automática</h3>
-<p>Al coger la botella, los sensores analizan tu piel y calculan tu nivel de hidratación actual en segundos.</p>
-</div>
-<div class="paso reveal">
-<div class="paso-ico">📊</div>
-<h3>Objetivo del día</h3>
-<p>La pantalla te muestra cuántos mililitros te faltan para llegar a tu objetivo personalizado de hidratación.</p>
-</div>
-<div class="paso reveal">
-<div class="paso-ico">✅</div>
-<h3>Meta cumplida</h3>
-<p>Al completar tu objetivo, la botella celebra con luces LED y registra el logro en tu historial de salud.</p>
-</div>
-</div>
+  <p class="section-tag reveal">✦ Proceso</p>
+  <h2 class="section-title reveal">¿Cómo funciona?</h2>
+  <p class="section-sub reveal">En solo 4 pasos cuidas tu salud sin esfuerzo</p>
+  <div class="pasos">
+    <div class="paso reveal rd1"><div class="paso-num"></div><div class="paso-ico">👤</div><h3>Crea tu perfil</h3><p>Introduce tu edad, peso, altura y nivel de actividad en la app. AquaSmart te conoce.</p></div>
+    <div class="paso reveal rd2"><div class="paso-num"></div><div class="paso-ico">🔬</div><h3>Medición automática</h3><p>Al coger la botella, los sensores calculan tu nivel de hidratación en segundos.</p></div>
+    <div class="paso reveal rd3"><div class="paso-num"></div><div class="paso-ico">📊</div><h3>Objetivo del día</h3><p>La pantalla te muestra cuántos mililitros te faltan para tu objetivo personalizado.</p></div>
+    <div class="paso reveal rd4"><div class="paso-num"></div><div class="paso-ico">✅</div><h3>Meta cumplida</h3><p>Al completar tu objetivo, la botella celebra con LEDs y registra el logro en tu historial.</p></div>
+  </div>
 </section>
 
-<!-- ESPECIFICACIONES -->
+<!-- CALCULADORA -->
+
+<section id="calculadora">
+  <p class="section-tag reveal">✦ Herramienta interactiva</p>
+  <h2 class="section-title reveal">Calculadora de hidratación</h2>
+  <p class="section-sub reveal">Descubre cuánta agua necesitas beber hoy — personalizado para ti</p>
+  <div class="calc-wrap reveal">
+    <div class="calc-grid">
+      <div class="calc-field"><label>Peso (kg)</label><input type="number" id="c-peso" placeholder="70" min="30" max="200" value="65"/></div>
+      <div class="calc-field"><label>Edad</label><input type="number" id="c-edad" placeholder="16" min="5" max="100" value="16"/></div>
+      <div class="calc-field"><label>Actividad física</label>
+        <select id="c-act">
+          <option value="1.2">Sedentario</option>
+          <option value="1.375">Ligero (1–3 días/semana)</option>
+          <option value="1.55" selected>Moderado (3–5 días)</option>
+          <option value="1.725">Activo (6–7 días)</option>
+          <option value="1.9">Atleta / muy activo</option>
+        </select>
+      </div>
+      <div class="calc-field"><label>Clima hoy</label>
+        <select id="c-clima">
+          <option value="0">Frío / nublado</option>
+          <option value="0.3" selected>Templado</option>
+          <option value="0.6">Caluroso</option>
+          <option value="1.0">Muy caluroso / verano</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-calc" onclick="calcular()">Calcular mi hidratación 💧</button>
+    <div class="calc-result">
+      <div>
+        <div class="calc-result-label">Agua recomendada al día</div>
+        <div class="calc-result-val"><span id="calc-val">—</span>&nbsp;<span style="-webkit-text-fill-color:#4a6d82;background:none;font-size:1.4rem">L</span></div>
+      </div>
+      <div class="calc-result-info" id="calc-info">Introduce tus datos y pulsa calcular para ver tu recomendación personalizada.</div>
+    </div>
+    <div class="calc-bar-wrap">
+      <div class="calc-bar-label"><span>0 L</span><span id="bar-max">4 L</span></div>
+      <div class="calc-bar-bg"><div class="calc-bar-fill" id="calc-bar"></div></div>
+    </div>
+  </div>
+</section>
+
 <section id="especificaciones">
-<p class="badge reveal" style="display:inline-block">Detalles técnicos</p>
-<h2 class="section-title reveal">Especificaciones</h2>
-<p class="section-sub reveal">Los números detrás de AquaSmart</p>
-<div class="specs-grid reveal">
-<div class="spec-item"><div class="spec-ico">📏</div><div><div class="spec-label">Altura</div><div class="spec-val">26 cm</div></div></div>
-<div class="spec-item"><div class="spec-ico">⚖️</div><div><div class="spec-label">Peso</div><div class="spec-val">320 g (vacía)</div></div></div>
-<div class="spec-item"><div class="spec-ico">🔋</div><div><div class="spec-label">Batería</div><div class="spec-val">24 h · Carga USB‑C</div></div></div>
-<div class="spec-item"><div class="spec-ico">📡</div><div><div class="spec-label">Conectividad</div><div class="spec-val">Bluetooth 5.0</div></div></div>
-<div class="spec-item"><div class="spec-ico">🌡️</div><div><div class="spec-label">Temp. resistida</div><div class="spec-val">-10 °C a 70 °C</div></div></div>
-<div class="spec-item"><div class="spec-ico">💧</div><div><div class="spec-label">Resistencia agua</div><div class="spec-val">IP68 sumergible</div></div></div>
-<div class="spec-item"><div class="spec-ico">🖥️</div><div><div class="spec-label">Pantalla</div><div class="spec-val">OLED 1.2"</div></div></div>
-<div class="spec-item"><div class="spec-ico">📱</div><div><div class="spec-label">Compatible con</div><div class="spec-val">iOS y Android</div></div></div>
-</div>
+  <p class="section-tag reveal">✦ Detalles técnicos</p>
+  <h2 class="section-title reveal">Especificaciones</h2>
+  <p class="section-sub reveal">Los números detrás de AquaSmart</p>
+  <div class="specs-grid reveal">
+    <div class="spec-item"><div class="spec-ico">📏</div><div><div class="spec-label">Altura</div><div class="spec-val">26 cm</div></div></div>
+    <div class="spec-item"><div class="spec-ico">⚖️</div><div><div class="spec-label">Peso</div><div class="spec-val">320 g (vacía)</div></div></div>
+    <div class="spec-item"><div class="spec-ico">🔋</div><div><div class="spec-label">Batería</div><div class="spec-val">24 h · Carga USB‑C</div></div></div>
+    <div class="spec-item"><div class="spec-ico">📡</div><div><div class="spec-label">Conectividad</div><div class="spec-val">Bluetooth 5.0</div></div></div>
+    <div class="spec-item"><div class="spec-ico">🌡️</div><div><div class="spec-label">Temp. resistida</div><div class="spec-val">-10 °C a 70 °C</div></div></div>
+    <div class="spec-item"><div class="spec-ico">💧</div><div><div class="spec-label">Resistencia agua</div><div class="spec-val">IP68 sumergible</div></div></div>
+    <div class="spec-item"><div class="spec-ico">🖥️</div><div><div class="spec-label">Pantalla</div><div class="spec-val">OLED 1.2"</div></div></div>
+    <div class="spec-item"><div class="spec-ico">📱</div><div><div class="spec-label">Compatible con</div><div class="spec-val">iOS y Android</div></div></div>
+  </div>
 </section>
 
-<!-- EQUIPO -->
+<!-- COMPARADOR -->
+
+<section id="comparador">
+  <p class="section-tag reveal">✦ Comparativa</p>
+  <h2 class="section-title reveal">AquaSmart vs la competencia</h2>
+  <p class="section-sub reveal">No todas las botellas son iguales — compruébalo</p>
+  <div class="reveal" style="overflow-x:auto">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Característica</th>
+          <th class="hl">⚡ AquaSmart</th>
+          <th>Botella normal</th>
+          <th>Botella LED básica</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Sensor de hidratación corporal</td><td class="hl"><span class="ccheck">✓</span></td><td><span class="cno">✗</span></td><td><span class="cno">✗</span></td></tr>
+        <tr><td>IA personalizada</td><td class="hl"><span class="ccheck">✓</span></td><td><span class="cno">✗</span></td><td><span class="cno">✗</span></td></tr>
+        <tr><td>App con historial</td><td class="hl"><span class="ccheck">✓</span></td><td><span class="cno">✗</span></td><td>Básica</td></tr>
+        <tr><td>Sensor de temperatura</td><td class="hl"><span class="ccheck">✓</span></td><td><span class="cno">✗</span></td><td>Solo display</td></tr>
+        <tr><td>Recordatorios adaptativos</td><td class="hl"><span class="ccheck">✓</span></td><td><span class="cno">✗</span></td><td>Solo fijos</td></tr>
+        <tr><td>IP68 sumergible</td><td class="hl"><span class="ccheck">✓</span></td><td>Depende</td><td><span class="cno">✗</span></td></tr>
+        <tr><td>Materiales reciclados</td><td class="hl"><span class="ccheck">✓</span></td><td><span class="cno">✗</span></td><td><span class="cno">✗</span></td></tr>
+        <tr><td>Batería 24h USB-C</td><td class="hl"><span class="ccheck">✓</span></td><td>Sin batería</td><td>8–12h</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- OPINIONES -->
+
+<section id="opiniones" style="padding-bottom:2rem">
+  <p class="section-tag reveal">✦ Opiniones</p>
+  <h2 class="section-title reveal">Lo que dicen los beta testers</h2>
+  <p class="section-sub reveal">Probado por compañeros, profesores y familias</p>
+</section>
+<div class="ticker-wrap">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
 <section id="equipo">
-<p class="badge reveal" style="display:inline-block">Detrás del proyecto</p>
-<h2 class="section-title reveal">Nuestro equipo</h2>
-<p class="section-sub reveal">Estudiantes de 1º Bachillerato apasionados por la tecnología</p>
-<div class="equipo-grid reveal">
-<div class="miembro">
-<div class="avatar">👩‍💻</div>
-<h4>Miembro 1</h4>
-<span>Diseño & UX</span>
-</div>
-<div class="miembro">
-<div class="avatar">👨‍🔬</div>
-<h4>Miembro 2</h4>
-<span>Sensores & Hardware</span>
-</div>
-<div class="miembro">
-<div class="avatar">👩‍🎨</div>
-<h4>Miembro 3</h4>
-<span>Marketing & Web</span>
-</div>
-<div class="miembro">
-<div class="avatar">👨‍💡</div>
-<h4>Miembro 4</h4>
-<span>IA & Software</span>
-</div>
-</div>
+  <p class="section-tag reveal">✦ Detrás del proyecto</p>
+  <h2 class="section-title reveal">Nuestro equipo</h2>
+  <p class="section-sub reveal">Estudiantes de 1º Bachillerato apasionados por la tecnología</p>
+  <div class="equipo-grid reveal">
+    <div class="miembro"><div class="avatar">👩‍💻</div><h4>Miembro 1</h4><span>Diseño & UX</span></div>
+    <div class="miembro"><div class="avatar">👨‍🔬</div><h4>Miembro 2</h4><span>Sensores & Hardware</span></div>
+    <div class="miembro"><div class="avatar">👩‍🎨</div><h4>Miembro 3</h4><span>Marketing & Web</span></div>
+    <div class="miembro"><div class="avatar">👨‍💡</div><h4>Miembro 4</h4><span>IA & Software</span></div>
+  </div>
 </section>
 
-<!-- CONTACTO -->
+<!-- FAQ -->
+
+<section id="faq">
+  <p class="section-tag reveal">✦ Dudas frecuentes</p>
+  <h2 class="section-title reveal">Preguntas frecuentes</h2>
+  <p class="section-sub reveal">Todo lo que necesitas saber sobre AquaSmart</p>
+  <div class="faq-list reveal">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">¿Cómo mide AquaSmart mi hidratación corporal?<span class="faq-icon">+</span></button>
+      <div class="faq-a"><p>AquaSmart utiliza sensores de bioimpedancia en la superficie de la botella. Al cogerla, emite una señal eléctrica de muy baja intensidad (completamente segura) que viaja por tus tejidos y mide su resistencia. A mayor resistencia, menor hidratación.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">¿Es seguro el sensor eléctrico?<span class="faq-icon">+</span></button>
+      <div class="faq-a"><p>Completamente. La corriente usada es menor a 1 miliamperio — cientos de veces por debajo del umbral de sensación. Es la misma tecnología que las básculas de composición corporal y los dispositivos médicos domésticos.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">¿Cuánto dura la batería y cómo se carga?<span class="faq-icon">+</span></button>
+      <div class="faq-a"><p>La batería aguanta 24 horas con uso normal (Bluetooth activo + mediciones cada 30 min). Se recarga por USB-C en aproximadamente 1.5 horas. El puerto está integrado en la base de la botella.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">¿Funciona sin el móvil?<span class="faq-icon">+</span></button>
+      <div class="faq-a"><p>Sí. La pantalla OLED muestra tu nivel de hidratación, el objetivo del día y la temperatura del agua de forma completamente autónoma. El móvil solo es necesario para la configuración inicial y para el historial detallado.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">¿Se puede meter en el lavavajillas?<span class="faq-icon">+</span></button>
+      <div class="faq-a"><p>El cuerpo tiene certificación IP68, pero recomendamos lavar a mano con agua templada y jabón suave. Las altas temperaturas del lavavajillas pueden dañar los sensores y la pantalla OLED a largo plazo.</p></div>
+    </div>
+  </div>
+</section>
+
 <section id="contacto">
-<p class="badge reveal" style="display:inline-block">Escríbenos</p>
-<h2 class="section-title reveal">Contacto</h2>
-<div class="contacto-card reveal">
-<p>¿Tienes preguntas sobre AquaSmart? Escríbenos y te responderemos lo antes posible.</p>
-<div class="contacto-inputs">
-<input type="text" placeholder="Tu nombre"/>
-<input type="email" placeholder="Tu correo electrónico"/>
-<textarea placeholder="Tu mensaje…"></textarea>
-</div>
-<button class="btn-enviar">Enviar mensaje 🚀</button>
-</div>
+  <p class="section-tag reveal">✦ Escríbenos</p>
+  <h2 class="section-title reveal">Contacto</h2>
+  <div class="contacto-card reveal">
+    <p>¿Tienes preguntas sobre AquaSmart? Escríbenos y te responderemos lo antes posible.</p>
+    <div class="contacto-inputs">
+      <div class="input-wrap"><input type="text" id="nom" placeholder="Tu nombre"/><label for="nom">Tu nombre</label></div>
+      <div class="input-wrap"><input type="email" id="mail" placeholder="Tu correo electrónico"/><label for="mail">Tu correo electrónico</label></div>
+      <div class="input-wrap tw"><textarea id="msg" placeholder="Tu mensaje…"></textarea><label for="msg">Tu mensaje…</label></div>
+    </div>
+    <button class="btn-enviar" id="btn-send">Enviar mensaje 🚀</button>
+  </div>
 </section>
 
-<!-- FOOTER -->
-<footer>
-Proyecto de Tecnología · 1º Bachillerato &nbsp;·&nbsp; <span>AquaSmart</span> &nbsp;·&nbsp; Todos los derechos reservados
-</footer>
+<footer>Proyecto de Tecnología · 1º Bachillerato &nbsp;·&nbsp; <span>AquaSmart</span> &nbsp;·&nbsp; Todos los derechos reservados</footer>
 
 <script>
-// Cursor personalizado
-const cur = document.getElementById('cursor');
-document.addEventListener('mousemove', e => {
-cur.style.left = e.clientX - 7 + 'px';
-cur.style.top = e.clientY - 7 + 'px';
-});
-document.querySelectorAll('a, button, .btn, .card, .miembro').forEach(el => {
-el.addEventListener('mouseenter', () => cur.classList.add('grande'));
-el.addEventListener('mouseleave', () => cur.classList.remove('grande'));
+/* CURSOR */
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.transform=`translate(${mx-5.5}px,${my-5.5}px)`});
+(function a(){rx+=(mx-rx)*.11;ry+=(my-ry)*.11;ring.style.transform=`translate(${rx-18}px,${ry-18}px)`;requestAnimationFrame(a)})();
+document.querySelectorAll('a,button,.btn,.card,.miembro,.spec-item,.paso,.faq-q').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.classList.add('hov');ring.classList.add('hov')});
+  el.addEventListener('mouseleave',()=>{cur.classList.remove('hov');ring.classList.remove('hov')});
 });
 
-// Partículas en el hero
-const cont = document.getElementById('particulas');
-for(let i=0;i<30;i++){
-const p = document.createElement('div');
-p.className = 'particula';
-p.style.left = Math.random()*100 + '%';
-p.style.setProperty('--dur', (6+Math.random()*10)+'s');
-p.style.setProperty('--delay', (Math.random()*10)+'s');
-cont.appendChild(p);
+/* PROGRESS + NAV */
+const pb=document.getElementById('pb');
+window.addEventListener('scroll',()=>{
+  pb.style.width=(window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>60);
+});
+
+/* PARTICLES */
+const cont=document.getElementById('particulas');
+for(let i=0;i<38;i++){
+  const p=document.createElement('div');p.className='particula';
+  const s=Math.random()*3+1.5;
+  p.style.cssText=`left:${Math.random()*100}%;width:${s}px;height:${s}px;--dur:${7+Math.random()*11}s;--delay:${Math.random()*12}s;${Math.random()>.7?'background:rgba(0,170,255,.8);':''}`;
+  cont.appendChild(p);
 }
 
-// Scroll reveal
-const obs = new IntersectionObserver(entries => {
-entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.12 });
-document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+/* SCROLL REVEAL */
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* COUNTERS */
+function animCount(el){
+  const t=parseFloat(el.dataset.target),s=el.dataset.suffix||'',pre=el.dataset.prefix||'',d=parseInt(el.dataset.dec)||0,dur=1800,t0=performance.now();
+  (function u(now){const p=Math.min((now-t0)/dur,1),e=1-Math.pow(1-p,3);el.textContent=pre+(e*t).toFixed(d)+s;if(p<1)requestAnimationFrame(u)})(performance.now());
+}
+const cobs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting&&e.target.dataset.target){animCount(e.target);cobs.unobserve(e.target)}}),{threshold:.5});
+document.querySelectorAll('.stat-num[data-target]').forEach(el=>cobs.observe(el));
+
+/* CALCULADORA */
+function calcular(){
+  const peso=parseFloat(document.getElementById('c-peso').value)||65;
+  const edad=parseFloat(document.getElementById('c-edad').value)||16;
+  const act=parseFloat(document.getElementById('c-act').value);
+  const clima=parseFloat(document.getElementById('c-clima').value);
+  let l=(peso*0.035)*(act/1.375)+(clima*0.4);
+  if(edad<18)l*=1.05; if(edad>60)l*=0.9;
+  l=Math.max(1.2,Math.min(5.0,l));
+  const v=l.toFixed(1);
+  document.getElementById('calc-val').textContent=v;
+  const vasos=Math.round(l/0.25);
+  const msgs=[
+    `Necesitas unos ${vasos} vasos de agua al día (250 ml c/u). ¡AquaSmart te lo recordará automáticamente!`,
+    `Con tu actividad y el clima, ${v} L es tu objetivo óptimo. Distribúyelos en sorbos regulares.`,
+    `Tu hidratación ideal es ${v} L diarios. La botella AquaSmart medirá si lo estás consiguiendo en tiempo real.`
+  ];
+  document.getElementById('calc-info').textContent=msgs[Math.floor(Math.random()*3)];
+  document.getElementById('calc-bar').style.width=Math.min((l/4)*100,100)+'%';
+}
+
+/* TICKER */
+const reviews=[
+  {s:5,t:'Llevaba años bebiendo poca agua sin saberlo. AquaSmart me cambió el hábito en dos semanas.',n:'María G.',r:'Estudiante de bachillerato',i:'👩‍🎓'},
+  {s:5,t:'El sensor de temperatura es increíble. Saber que el agua está fría antes de beber es una pasada.',n:'Javier M.',r:'Profe de educación física',i:'🏋️'},
+  {s:5,t:'Mi hijo lo usa en el entrenamiento de fútbol. Ha mejorado su rendimiento notablemente.',n:'Carmen R.',r:'Madre de jugador sub-16',i:'👩'},
+  {s:4,t:'La app es muy intuitiva. Me encanta el historial semanal para ver mi progreso de hidratación.',n:'Pablo T.',r:'Beta tester',i:'👨‍💻'},
+  {s:5,t:'Nunca pensé que una botella pudiera ser tan lista. Los LEDs de recordatorio son perfectos.',n:'Laura S.',r:'Estudiante universitaria',i:'👩‍🔬'},
+  {s:5,t:'Lo presentamos en la feria de ciencias y ganamos el primer premio. La gente alucinó con el prototipo.',n:'El equipo AquaSmart',r:'Creadores del proyecto',i:'🏆'},
+];
+const track=document.getElementById('ticker');
+[...reviews,...reviews].forEach(r=>{
+  track.innerHTML+=`<div class="tcard"><div class="tcard-stars">${'★'.repeat(r.s)}${'☆'.repeat(5-r.s)}</div><div class="tcard-text">"${r.t}"</div><div class="tcard-author"><div class="tcard-avatar">${r.i}</div><div><div class="tcard-name">${r.n}</div><div class="tcard-role">${r.r}</div></div></div></div>`;
+});
+
+/* FAQ */
+function toggleFaq(btn){
+  const item=btn.closest('.faq-item'),was=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!was)item.classList.add('open');
+}
+
+/* SEND BTN */
+document.getElementById('btn-send').addEventListener('click',function(){
+  this.textContent='¡Enviado! ✓';this.style.background='linear-gradient(135deg,#00c864,#00ffe0)';
+  setTimeout(()=>{this.textContent='Enviar mensaje 🚀';this.style.background=''},3000);
+});
 </script>
+
 </body>
 </html>
